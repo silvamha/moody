@@ -1,0 +1,27 @@
+# Modules
+node_modules/
+
+# Secrets
+.env
+
+# Notes
+notes/
+*.md 
+
+# MISC
+*.doc
+*.docx
+*.xls
+*.txt
+*.pdf
+
+# Hold working files while testing new code
+hold/ 
+*.hold 
+*.tmp 
+
+# Security
+security 
+*.security 
+security/
+
