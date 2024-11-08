@@ -16,6 +16,8 @@ notes/
 *.pdf
 
 # Hold working files while testing new code
+tmp/
+temp/
 hold/ 
 *.hold 
 *.tmp 
@@ -24,4 +26,7 @@ hold/
 security 
 *.security 
 security/
+
+*.svg
+
 
