@@ -14,8 +14,7 @@ import {
   getFirestore,
   collection,
   addDoc,
-  serverTimestamp,
-  getDocs,
+  serverTimestamp
 } from "firebase/firestore";
 
 /* === Firebase Setup === */
@@ -57,9 +56,6 @@ const userGreetingEl = document.getElementById("user-greeting");
 const moodEmojiEls = document.getElementsByClassName("mood-emoji-btn");
 const textareaEl = document.getElementById("post-input");
 const postButtonEl = document.getElementById("post-btn");
-
-const fetchPostsButtonEl = document.getElementById("fetch-posts-btn");
-
 const postsEl = document.getElementById("posts");
 
 /* == UI - Event Listeners == */
@@ -76,8 +72,6 @@ for (let moodEmojiEl of moodEmojiEls) {
 }
 
 postButtonEl.addEventListener("click", postButtonPressed);
-
-fetchPostsButtonEl.addEventListener("click", fetchOnceAndRenderPostsFromDB);
 
 /* === State === */
 
@@ -162,25 +156,6 @@ async function addPostToDB(postBody, user) {
   }
 }
 
-async function fetchOnceAndRenderPostsFromDB() {
-  /*  Challenge:
-		Import collection and getDocs from 'firebase/firestore'
-
-        Use the code from the documentaion to make this function work.
-        
-        This function should fetch all posts from the 'posts' collection from firestore and then console log each post in this way:
-        "{Document ID}: {Post Body}"
-    */
-
-  const querySnapshot = await getDocs(collection(db, "posts"));
-  clearAll(postsEl);
-
-  querySnapshot.forEach((doc) => {
-    console.log(`${doc.id}: ${doc.data().body}`);
-    renderPost(postsEl, doc.data());
-  });
-}
-
 /* == Functions - UI Functions == */
 
 function renderPost(postsEl, postData) {
@@ -191,7 +166,7 @@ function renderPost(postsEl, postData) {
             <img src="assets/emojis/${postData.mood}.png">
                </div>             
                  <p>
-                    ${replaceNewLinesWithBrTags(postData.body)}         
+                    ${replaceNewlinesWithBrTags(postData.body)}         
                 </p>                       
   </div>                                          
    
