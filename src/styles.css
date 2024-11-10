@@ -8,6 +8,7 @@
     --light-color: #FFFEFC;
     --grey-color: #747E79;
     --dark-color: #000000;
+    --white-color: #FFFEFC;
 
     --primary-font: 'Cabin', sans-serif;
     --seconday-font: 'Calistoga', sans-serif;
@@ -136,12 +137,46 @@ section {
 	margin-bottom: 1.8em;
 }
 
+/* == Posts Section - Filters == */
+
+.filters-and-posts-section {
+    margin-top: 1em;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6em;
+}
+
+.filters-section {
+    display: flex;
+    gap: 0.4em;
+}
+
+.filter-btn {
+    color: var(--dark-color);
+    font-size: 0.9em;
+    padding: 0.3em;
+    background-color: transparent;
+}
+
+.selected-filter {
+    color: var(--white-color);
+    background-color: var(--dark-color);
+}
+
+.unselected-filter {
+    color: var(--dark-color);
+    background-color: var(--white-color);
+}
+
+/* == Posts Section - Posts == */
+
 .post {
     display: flex;
     flex-direction: column;
     background-color: var(--secondary-color);
     padding: 0.8em;
     border-radius: var(--element-border-radius);
+    gap: 0.4em;
 }
 
 .post .header {

@@ -9,12 +9,17 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from "firebase/auth";
+import firebase from "firebase/compat/app";
 
 import {
   getFirestore,
   collection,
   addDoc,
-  serverTimestamp
+  serverTimestamp,
+  onSnapshot,
+  query,
+  where,
+  orderBy,
 } from "firebase/firestore";
 
 /* === Firebase Setup === */
@@ -56,6 +61,11 @@ const userGreetingEl = document.getElementById("user-greeting");
 const moodEmojiEls = document.getElementsByClassName("mood-emoji-btn");
 const textareaEl = document.getElementById("post-input");
 const postButtonEl = document.getElementById("post-btn");
+
+const allFilterButtonEl = document.getElementById("all-filter-btn");
+
+const filterButtonEls = document.getElementsByClassName("filter-btn");
+
 const postsEl = document.getElementById("posts");
 
 /* == UI - Event Listeners == */
@@ -71,11 +81,19 @@ for (let moodEmojiEl of moodEmojiEls) {
   moodEmojiEl.addEventListener("click", selectMood);
 }
 
+for (let filterButtonEl of filterButtonEls) {
+  filterButtonEl.addEventListener("click", selectFilter);
+}
+
 postButtonEl.addEventListener("click", postButtonPressed);
 
 /* === State === */
 
 let moodState = 0;
+
+/* === Global Constants === */
+
+const collectionName = "posts";
 
 /* === Main Code === */
 
@@ -84,6 +102,7 @@ onAuthStateChanged(auth, (user) => {
     showLoggedInView();
     showProfilePicture(userProfilePictureEl, user);
     showUserGreeting(userGreetingEl, user);
+    fetchInRealtimeAndRenderPostsFromDB(user);
   } else {
     showLoggedOutView();
   }
@@ -110,6 +129,7 @@ function authSignInWithEmail() {
   signInWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
       clearAuthFields();
+      console.log("Signed in with email!");
     })
     .catch((error) => {
       console.error(error.message);
@@ -142,7 +162,7 @@ function authSignOut() {
 async function addPostToDB(postBody, user) {
   try {
     // Add a new document in collection "cities"
-    const docRef = await addDoc(collection(db, "posts"), {
+    const docRef = await addDoc(collection(db, collectionName), {
       body: postBody,
       uid: user.uid,
       createdAt: serverTimestamp(),
@@ -156,6 +176,41 @@ async function addPostToDB(postBody, user) {
   }
 }
 
+function fetchInRealtimeAndRenderPostsFromDB(user) {
+  const postsRef = collection(db, collectionName);
+  const q = query(
+    postsRef,
+    where("uid", "==", user.uid),
+    orderBy("createdAt", "desc")
+  );
+  onSnapshot(q, (querySnapshot) => {
+    clearAll(postsEl);
+
+    querySnapshot.forEach((doc) => {
+      renderPost(postsEl, doc.data());
+    });
+  });
+}
+
+function fetchTodayPosts(user) {
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+
+  const endOfDay = new Date();
+  endOfDay.setHours = (23, 59, 59, 99);
+
+  const postsRef = collection(db, collectionName);
+
+  const q = query(
+    postsRef,
+    where("uid", "==", user.uid),
+    where("createdAt", ">=", startOfDay),
+    where("createdAt", "<=", endOfDay),
+    orderBy("createdAt", "desc")
+  );
+  console.log(endOfDay, q);
+}
+fetchTodayPosts();
 /* == Functions - UI Functions == */
 
 function renderPost(postsEl, postData) {
@@ -168,15 +223,14 @@ function renderPost(postsEl, postData) {
                  <p>
                     ${replaceNewlinesWithBrTags(postData.body)}         
                 </p>                       
-  </div>                                          
-   
+  </div>  
    `;
 }
 
 function replaceNewlinesWithBrTags(inputString) {
-    // Challenge: Use the replace method on inputString to replace newlines with break tags and return the result
-   
-    return inputString.replace(/\n/g, "<br>")
+  // Challenge: Use the replace method on inputString to replace newlines with break tags and return the result
+
+  return inputString.replace(/\n/g, "<br>");
 }
 
 function postButtonPressed() {
@@ -191,7 +245,7 @@ function postButtonPressed() {
 }
 
 function clearAll(element) {
-    element.innerHTML = ""
+  element.innerHTML = "";
 }
 
 function showLoggedOutView() {
@@ -244,6 +298,9 @@ function showUserGreeting(element, user) {
 }
 
 function displayDate(firebaseDate) {
+  if (!firebaseDate) {
+    return "Date processing";
+  }
   const date = firebaseDate.toDate();
 
   const day = date.getDate();
@@ -313,4 +370,32 @@ function resetAllMoodElements(allMoodElements) {
 
 function returnMoodValueFromElementId(elementId) {
   return Number(elementId.slice(5));
+}
+
+/* == Functions - UI Functions - Date Filters == */
+
+function resetAllFilterButtons(allFilterButtons) {
+  for (let filterButtonEl of allFilterButtons) {
+    filterButtonEl.classList.remove("selected-filter");
+  }
+}
+
+function updateFilterButtonStyle(element) {
+  element.classList.add("selected-filter");
+}
+
+function selectFilter(event) {
+  const user = auth.currentUser;
+
+  const selectedFilterElementId = event.target.id;
+
+  const selectedFilterPeriod = selectedFilterElementId.split("-")[0];
+
+  const selectedFilterElement = document.getElementById(
+    selectedFilterElementId
+  );
+
+  resetAllFilterButtons(filterButtonEls);
+
+  updateFilterButtonStyle(selectedFilterElement);
 }
